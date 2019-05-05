@@ -1,4 +1,4 @@
-/* ========================================================================== 
+/* ==========================================================================
  *                           dexie-observable.js
  * ==========================================================================
  *
@@ -17,7 +17,7 @@
  * http://dexie.org
  *
  * Apache License Version 2.0, January 2004, http://www.apache.org/licenses/
- * 
+ *
  */
 import Dexie from 'dexie';
 import { nop, promisableChain, createUUID } from './utils';
@@ -63,7 +63,7 @@ export default function Observable(db) {
 
     var NODE_TIMEOUT = 20000, // 20 seconds before local db instances are timed out. This is so that old changes can be deleted when not needed and to garbage collect old _syncNodes objects.
         HIBERNATE_GRACE_PERIOD = 20000, // 20 seconds
-        // LOCAL_POLL: The time to wait before polling local db for changes and cleaning up old nodes. 
+        // LOCAL_POLL: The time to wait before polling local db for changes and cleaning up old nodes.
         // Polling for changes is a fallback only needed in certain circomstances (when the onstorage event doesnt reach all listeners - when different browser windows doesnt share the same process)
         LOCAL_POLL = 500, // 500 ms. In real-world there will be this value + the time it takes to poll(). A small value is needed in Workers where we cannot rely on storage event.
         HEARTBEAT_INTERVAL = NODE_TIMEOUT - 5000;
@@ -84,7 +84,7 @@ export default function Observable(db) {
         isMaster: Number, // 1 if true. Not using Boolean because it's not possible to index Booleans in IE implementation of IDB.
 
         // Below properties should be extended in Dexie.Syncable. Not here. They apply to remote nodes only (type == "remote"):
-        syncProtocol: String, // Tells which implementation of ISyncProtocol to use for remote syncing. 
+        syncProtocol: String, // Tells which implementation of ISyncProtocol to use for remote syncing.
         syncContext: null,
         syncOptions: Object,
         connected: false, // FIXTHIS: Remove! Replace with status.
@@ -215,7 +215,7 @@ export default function Observable(db) {
     // When db opens, make sure to start monitor any changes before other db operations will start.
     db.on("ready", function startObserving() {
         if (db.dynamicallyOpened()) return db; // Don't observe dynamically opened databases.
-        
+
         return db.table("_changes").orderBy("rev").last(function(lastChange) {
             // Since startObserving() is called before database open() method, this will be the first database operation enqueued to db.
             // Therefore we know that the retrieved value will be This query will
@@ -304,9 +304,11 @@ export default function Observable(db) {
         }
         var LIMIT = 1000;
         var promise = db._changes.where("rev").above(ourSyncNode.myRevision).limit(LIMIT).toArray(function (changes) {
+            console.log(`dexie: readChanges: ${changes.length}`);
             if (changes.length > 0) {
                 var lastChange = changes[changes.length - 1];
                 partial = (changes.length === LIMIT);
+                console.log('dexie: fire changes.');
                 db.on('changes').fire(changes, partial);
                 ourSyncNode.myRevision = lastChange.rev;
             } else if (wasPartial) {
@@ -360,7 +362,7 @@ export default function Observable(db) {
      * during that changes are being applied and update our lastHeartBeat property while poll() is waiting.
      * When cleanup() (who also is blocked by the sync) wakes up, it won't kill the master node because this
      * heartbeat job will have updated the master node's heartbeat during the long-running sync transaction.
-     * 
+     *
      * If we did not have this heartbeat, and a server send lots of changes that took more than NODE_TIMEOUT
      * (20 seconds), another node waking up after the sync would kill the master node and take over because
      * it would believe it was dead.
@@ -394,6 +396,7 @@ export default function Observable(db) {
         var currentInstance = mySyncNode.node && mySyncNode.node.id;
         if (!currentInstance) return;
         Dexie.vip(function() { // VIP ourselves. Otherwise we might not be able to consume intercomm messages from master node before database has finished opening. This would make DB stall forever. Cannot rely on storage-event since it may not always work in some browsers of different processes.
+            console.log('dexie: poll before readchanges');
             readChanges(Observable.latestRevision[db.name]).then(cleanup).then(consumeIntercommMessages)
             .catch('DatabaseClosedError', ()=>{
                 // Handle database closed error gracefully while reading changes.
@@ -410,7 +413,7 @@ export default function Observable(db) {
         });
     }
 
-    
+
     function cleanup() {
         var ourSyncNode = mySyncNode.node;
         if (!ourSyncNode) return Promise.reject(new Dexie.DatabaseClosedError());
@@ -486,7 +489,7 @@ export default function Observable(db) {
 
 //
 // Static properties and methods
-// 
+//
 
 Observable.latestRevision = {}; // Latest revision PER DATABASE. Example: Observable.latestRevision.FriendsDB = 37;
 Observable.on = Dexie.Events(null, "latestRevisionIncremented", "suicideNurseCall", "intercomm", "beforeunload"); // fire(dbname, value);
