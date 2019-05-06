@@ -1,8 +1,9 @@
 {
-  "name": "dexie",
-  "version": "2.0.4",
+  "name": "f-dexie",
+  "version": "2.0.7",
   "description": "A Minimalistic Wrapper for IndexedDB",
   "main": "dist/dexie.js",
+  "browser": "dist/dexie.min.js",
   "module": "dist/dexie.es.js",
   "jsnext:main": "dist/dexie.es.js",
   "typings": "dist/dexie.d.ts",

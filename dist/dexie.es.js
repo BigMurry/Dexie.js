@@ -71,7 +71,7 @@ function assert(b) {
 }
 function asap(fn) {
     if (_global.setImmediate)
-        setImmediate(fn);
+        _global.setImmediate(fn);
     else
         setTimeout(fn, 0);
 }

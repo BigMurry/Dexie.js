@@ -4,7 +4,7 @@
  *
  * By David Fahlander, david.fahlander@gmail.com
  *
- * Version 2.0.4, Fri May 25 2018
+ * Version 2.0.7, Mon May 06 2019
  *
  * http://dexie.org
  *
@@ -77,7 +77,7 @@ function assert(b) {
 }
 function asap(fn) {
     if (_global.setImmediate)
-        setImmediate(fn);
+        _global.setImmediate(fn);
     else
         setTimeout(fn, 0);
 }
@@ -1469,14 +1469,14 @@ function Events(ctx) {
  *
  * Copyright (c) 2014-2017 David Fahlander
  *
- * Version 2.0.4, Fri May 25 2018
+ * Version 2.0.7, Mon May 06 2019
  *
  * http://dexie.org
  *
  * Apache License Version 2.0, January 2004, http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-var DEXIE_VERSION = '2.0.4';
+var DEXIE_VERSION = '2.0.7';
 var maxString = String.fromCharCode(65535);
 var maxKey = (function () { try {
     IDBKeyRange.only([[]]);
